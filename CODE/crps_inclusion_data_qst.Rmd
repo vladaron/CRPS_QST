@@ -702,3 +702,55 @@ fig3_aff
 
 ```
 
+# Figure DMA and PHS: Raw data
+
+```{r fig_dma_phs}
+fig.data.dma.phs <- data_tab_nolog |> # non transformed data are formatted for visualisation
+  mutate(side = factor(side, levels = levels(factor(data_tab_log$side)), labels = c("Affected", "Controlateral"))) |>
+  filter(qst_modality %in% c("dma", "phs")) |>
+  mutate(qst_modality = factor(qst_modality, levels = c("dma", "phs"), labels = c("DMA", "PHS"))) 
+
+max(fig.data.dma.phs$values)
+
+fig.data.dma.phs <- data_tab_nolog |> # non transformed data are formatted for visualisation
+  mutate(side = factor(side, levels = levels(factor(data_tab_log$side)), labels = c("Affected", "Controlateral"))) |>
+  filter(qst_modality %in% c("dma", "phs")) |>
+  mutate(qst_modality = factor(qst_modality, levels = c("dma", "phs"), labels = c("DMA", "PHS"))) |> 
+  group_by(qst_modality, side) |> # a data summary with mean, and cI 95% is computed
+  summarise(m = mean(values, na.rm = T),
+            ci_l = ci_low(values),
+            ci_h = ci_high(values))
+
+
+pos <- position_dodge(width=0.3) 
+
+fig.dma.phs <- fig.data.dma.phs |> # figure of DMA and PHS raw data
+  ggplot(aes(x = qst_modality, y = m, col = side)) +
+  geom_point(position = pos) +
+  geom_errorbar(aes(x = qst_modality, ymin = ci_l, ymax = ci_h),  width = 0.2, position = pos) +
+    scale_color_lancet() +
+  scale_y_continuous(
+    limits = c(0,3), 
+    breaks = seq(0, 3),
+    #labels = c("0","1","2","100"),
+    name = "Pain rating (0 - 100)",
+    sec.axis = sec_axis(transform = ~.*1, 
+                        name = "PHS reports (0 - 3)")) +
+  labs(x = "QST parameter",
+       col = "") + 
+   # theme(legend.position = "bottom") +
+  my_theme_2() 
+
+#ggsave(filename = "fig_dma_phs.png", plot = fig.dma.phs, path = "../output", dpi = 600)
+  
+
+
+
+fig.dma.phs
+
+
+
+
+```
+
+
